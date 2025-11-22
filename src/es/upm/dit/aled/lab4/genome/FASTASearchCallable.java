@@ -12,6 +12,12 @@ import java.util.concurrent.Callable;
  * @author rgarciacarmona
  *
  */
+/*FASTASearchCallable: una clase que ejecutará la búsqueda lineal (como en la práctica 3),
+pero que trabajará sobre un fragmento del genoma en lugar de sobre su totalidad. Esta
+clase contendrá el código equivalente a los métodos search() y compare() de la práctica
+3. Además, esta clase implementa el interfaz Callable, ya que es una tarea que debe poder
+ser lanzada como hebra.*/
+
 public class FASTASearchCallable implements Callable<List<Integer>> {
 
 	private FASTAReaderThreads reader;
@@ -30,7 +36,15 @@ public class FASTASearchCallable implements Callable<List<Integer>> {
 	 * @param hi      The higher bound of the segment of content to be searched.
 	 * @param pattern The pattern to be found.
 	 */
+	/*Implemente este constructor. Al hacerlo, sea consciente de que la razón de que se le pase una
+	referencia a FASTAReaderThreads es porque el método compare() necesita acceder al contenido
+	del genoma mediante el método getContent() de FASTAReaderThreads.*/
+	
 	public FASTASearchCallable(FASTAReaderThreads reader, int lo, int hi, byte[] pattern) {
+		this.reader = reader;
+		this.lo = lo;
+		this.hi = hi; 
+		this.pattern = pattern;
 		// TODO
 	}
 
@@ -45,7 +59,18 @@ public class FASTASearchCallable implements Callable<List<Integer>> {
 	@Override
 	public List<Integer> call() throws Exception {
 		// TODO
-		return null;
+		//creo list hits
+		List<Integer> hits = new ArrayList<Integer>();
+		for(int i = 0; i < hi; i++) {
+			try {
+				if(compare(pattern,i)) {
+					hits.add(i);
+				}
+			}catch(FASTAException e) {
+				break;
+			}
+		}
+		return hits;
 	}
 
 	/*

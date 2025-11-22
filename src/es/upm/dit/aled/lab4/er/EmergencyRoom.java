@@ -122,7 +122,11 @@ public class EmergencyRoom {
 	 * 
 	 * @param patient The Patient.
 	 */
+	/*admit(Patient patient), que comienza la ejecución del Patient que se le pasa como
+	parámetro.*/
+	
 	public void admit(Patient patient) {
+		patient.start(); //uso start para comenzar la tarea. hace el run 
 		// TODO
 	}
 
@@ -131,7 +135,15 @@ public class EmergencyRoom {
 	 * 
 	 * @param patient The Patient.
 	 */
+	/*waitForDischarge(Patient patient), que se queda esperando a que el Patient que se
+	le pasa como parámetro finalice.*/
+	//para ello uso un sleep, y con ello un try catch
 	public void waitForDischarge(Patient patient) {
+		try {
+			patient.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		// TODO
 	}
 

@@ -23,6 +23,12 @@ import java.util.concurrent.Future;
  * @author mmiguel, rgarciacarmona
  *
  */
+/*FASTAReaderThreads: una clase que ejecutará tantas tareas FASTASearchCallable como
+procesadores tenga el equipo, indicando a cada una sobre qué parte del genoma debe buscar.
+Según estas vayan terminando, FASTAReaderThreads irá agregando los resultados en un
+único conjunto, que será el que devuelva. Esta clase reutiliza gran parte del código de la
+clase FASTASearch de la práctica 3 (todo menos los métodos search() y compare().*/
+
 public class FASTAReaderThreads {
 
 	// All threads can access the same content and valid bytes since they are never
@@ -116,7 +122,38 @@ public class FASTAReaderThreads {
 	 */
 	public List<Integer> search(byte[] pattern) {
 		// TODO
-		return null;
+		//Creo lista que devuelvo
+		List<Integer> results = new ArrayList<Integer>(0);
+		try {
+			//creo exc que organice tantos threads como cores
+			int cores = Runtime.getRuntime().availableProcessors();
+			ExecutorService exc = Executors.newFixedThreadPool(cores);
+			//creo tantas tareas como cores, con array
+			Future<List<Integer>>[] futures = new Future[cores];
+			//creo lo y hi, que serán los límites de busqueda lineal de cada thread
+			//cada thread funciona en este tamaño:
+			int tamano = content.length / cores;
+			int lo = 0;
+			int hi = 0 + tamano;
+			// creo tantas tareas como cores y submit
+			for (int i = 0; i < cores; i++) {
+				Callable<List<Integer>> task = new FASTASearchCallable(this, lo, hi, pattern);
+				Future<List<Integer>> future = exc.submit(task);
+				futures[i] = future;
+				// Aumento lo y hi
+				lo += tamano;
+				hi += tamano;
+			}
+			// Espero aque terminen las tareas con .get()
+			for (int i = 0; i < futures.length; i++) {
+				results.addAll(futures[i].get());
+			}
+			//acabo con el exc
+			exc.shutdown();
+		}catch(Exception e) {
+			System.out.println("Tarea interrumpida"+ e.getMessage());
+		}
+		return results;
 	}
 
 	public static void main(String[] args) {
